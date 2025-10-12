@@ -2,8 +2,9 @@
 
 use camino::{Utf8Path, Utf8PathBuf};
 use fontc::{generate_font, Flags, Input};
-use napi_rs_woff_build::{convert_ttf_to_woff2, Woff2Params};
+use pollster::FutureExt as _;
 use std::{collections::HashMap, fs, path::PathBuf};
+use ttf2woff2::Converter;
 use write_fonts::{tables as write_tables, types::NameId, FontBuilder};
 
 use crate::{
@@ -82,7 +83,7 @@ impl FontCompiler {
                     reason: "WOFF compilation not yet implemented".to_string(),
                 })
             }
-            OutputFormat::Woff2 => self.compile_to_woff(&bytes, output_path)?,
+            OutputFormat::Woff2 => self.compile_to_woff(bytes, output_path)?,
             OutputFormat::Ttc => {
                 return Err(Error::Compilation {
                     style: member.style_name.clone(),
@@ -134,16 +135,13 @@ impl FontCompiler {
     }
 
     /// Compiles a UFO to WOFF format.
-    fn compile_to_woff(&self, ttf_bytes: &Vec<u8>, output_path: &Utf8Path) -> Result<Vec<u8>> {
-        let params = Woff2Params {
-            extended_metadata: None,
-            brotli_quality: Some(255),
-            allow_transforms: None,
-        };
+    fn compile_to_woff(&self, ttf_bytes: Vec<u8>, output_path: &Utf8Path) -> Result<Vec<u8>> {
+        let convertor =
+            Converter::from_data(ttf_bytes, None, ttf2woff2::BrotliQuality { value: 255 })
+                .block_on()
+                .unwrap();
 
-        Ok(convert_ttf_to_woff2(&ttf_bytes, Some(params))
-            .unwrap()
-            .into())
+        Ok(convertor.to_woff2().unwrap())
     }
 
     /// Compiles a UFO to WOFF2 format.
