@@ -25,7 +25,7 @@ impl ManifestGenerator {
         let mut manifest = Manifest::new(family.family_name().to_string());
 
         // Copy global information
-        manifest.publication_date = family.info.publication_date.clone();
+        manifest.publication_date = family.info.publication_date.to_string();
         manifest.spdx_license_identifier = family.info.license.clone();
         manifest.summary = family.info.summary.clone();
         manifest.fontform = family.info.font_form.clone();
