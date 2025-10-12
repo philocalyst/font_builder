@@ -33,16 +33,6 @@ static VALID_FONT_FORMS: &[&str] = &[
 pub fn validate_font_info(info: &FontInfo, context: &str) -> Result<()> {
     let mut errors = Vec::new();
 
-    // Validate publication_date format
-    if !DATE_REGEX.is_match(&info.publication_date) {
-        errors.push(Error::InvalidDate {
-            field: "publication_date".to_string(),
-            value: info.publication_date.clone(),
-        });
-    } else if let Err(e) = info.parse_publication_date() {
-        errors.push(e);
-    }
-
     // Validate license
     if !SPDX_LICENSES.contains(&info.license.as_str()) {
         errors.push(Error::InvalidLicense(info.license.clone()));
@@ -64,27 +54,8 @@ pub fn validate_font_info(info: &FontInfo, context: &str) -> Result<()> {
     }
 
     // Validate designers (at least one required)
-    if info.designers.is_empty() {
-        errors.push(Error::missing_field("designers", context));
-    } else {
-        for (i, designer) in info.designers.iter().enumerate() {
-            if designer.name.trim().is_empty() {
-                errors.push(Error::missing_field(
-                    &format!("designers[{}].name", i),
-                    context,
-                ));
-            }
-        }
-    }
-
-    // Validate contributors
-    for (i, contributor) in info.contributors.iter().enumerate() {
-        if contributor.name.trim().is_empty() {
-            errors.push(Error::missing_field(
-                &format!("contributors[{}].name", i),
-                context,
-            ));
-        }
+    if info.designers.is_none() && info.contributors.is_none() {
+        errors.push(Error::missing_field("designers or contribitors", context));
     }
 
     if errors.is_empty() {
