@@ -1,7 +1,8 @@
 //! Font compilation from UFO to various output formats.
 
 use camino::{Utf8Path, Utf8PathBuf};
-use std::{collections::HashMap, fs};
+use fontc::{generate_font, Flags, Input};
+use std::{collections::HashMap, fs, path::PathBuf};
 use write_fonts::{tables as write_tables, types::NameId, FontBuilder};
 
 use crate::{
@@ -70,7 +71,7 @@ impl FontCompiler {
         }
 
         match format {
-            OutputFormat::Ttf => self.compile_to_ttf(member, output_path),
+            OutputFormat::Ttf => self.compile_to_ttf(&member, output_path),
             OutputFormat::Woff => self.compile_to_woff(member, output_path),
             OutputFormat::Woff2 => self.compile_to_woff2(member, output_path),
             OutputFormat::Ttc => Err(Error::Compilation {
@@ -81,39 +82,44 @@ impl FontCompiler {
     }
 
     /// Compiles a UFO to TTF format using write-fonts.
-    fn compile_to_ttf(&self, member: &FamilyMemberSource, output_path: &Utf8Path) -> Result<()> {
-        // This is a simplified implementation. In a production system,
-        // you would need to:
-        // 1. Convert UFO glyphs to TrueType outlines
-        // 2. Generate all required OpenType tables
-        // 3. Handle hinting, kerning, features, etc.
+    fn compile_to_ttf(&self, family: &FamilyMemberSource, out_path: &Utf8Path) -> Result<()> {
+        // 1) Make a temp build dir
+        let build_dir = out_path
+            .parent()
+            .map(|p| p.join("fontc-build"))
+            .unwrap_or_else(|| camino::Utf8PathBuf::from("fontc-build"));
+        fs::create_dir_all(&build_dir).map_err(crate::error::Error::Io)?;
 
-        // For now, we'll create a basic structure that demonstrates the approach
-        let font_info = &member.font.font_info;
+        let family_name = "ok";
+        let style_name = &family.style_name;
+        let ufo_basename = family.ufo_path.file_name().unwrap();
 
-        let family_name = font_info.family_name.as_deref().unwrap_or("Unknown");
+        // Then write the designspace...
+        let ds_path =
+            write_single_ufo_designspace(&build_dir, ufo_basename, family_name, style_name, 0u16)
+                .map_err(crate::error::Error::Io)?;
 
-        let style_name = font_info
-            .style_name
-            .as_deref()
-            .unwrap_or(&member.style_name);
+        let flags = Flags::default();
+        let bytes = generate_font(
+            &Input::new(ds_path.as_std_path()).map_err(|e| crate::error::Error::Compilation {
+                style: "unknown".into(),
+                reason: format!("fontc input error: {e}"),
+            })?,
+            build_dir.as_std_path(),
+            Some(&PathBuf::from(out_path.as_str())),
+            flags,
+            /* skip_features */ false,
+        )
+        .map_err(|e| crate::error::Error::Compilation {
+            style: "unknown".into(),
+            reason: format!("fontc generate_font error: {e}"),
+        })?;
 
-        // Note: This is a placeholder. A full implementation would require
-        // converting UFO data structures to write-fonts format, which is
-        // complex and beyond a simple example. In production, you might:
-        // 1. Use fontmake via FFI
-        // 2. Use ufo2ft Python library via PyO3
-        // 3. Implement full UFO->TTF conversion (very complex)
-
-        // For demonstration, we'll create a minimal valid error
-        Err(Error::Compilation {
-            style: member.style_name.clone(),
-            reason: format!(
-                "TTF compilation not fully implemented. \
-                 Would compile {} {} to {}",
-                family_name, style_name, output_path
-            ),
-        })
+        // 4) If generate_font didn’t write file, write the returned bytes ourselves
+        if !out_path.exists() {
+            std::fs::write(out_path, &bytes).map_err(crate::error::Error::Io)?;
+        }
+        Ok(())
     }
 
     /// Compiles a UFO to WOFF format.
@@ -247,4 +253,69 @@ pub fn width_to_ot_name(width: u16) -> &'static str {
         200 => "UltraExpanded",
         _ => "Medium",
     }
+}
+
+fn copy_dir_recursively(src: &camino::Utf8Path, dst: &camino::Utf8Path) -> std::io::Result<()> {
+    std::fs::create_dir_all(dst)?;
+    for entry in std::fs::read_dir(src)? {
+        let entry = entry?;
+        let path = entry.path();
+        let file_name = entry.file_name();
+        let to = dst.join(std::ffi::OsStr::to_string_lossy(&file_name).as_ref());
+        if path.is_dir() {
+            copy_dir_recursively(&camino::Utf8PathBuf::try_from(path).unwrap(), &to)?;
+        } else {
+            std::fs::copy(path, to)?;
+        }
+    }
+    Ok(())
+}
+
+// The helper function:
+fn write_single_ufo_designspace(
+    build_dir: &camino::Utf8Path,
+    ufo_basename: &str,
+    family: &str,
+    style: &str,
+    weight: u16,
+) -> std::io::Result<camino::Utf8PathBuf> {
+    let ds_path = build_dir.join("temp.designspace");
+    // This XML structure mimics a minimal variable font with only one master.
+    // This is what fontc's parser expects.
+    let ds_xml = format!(
+        r#"<?xml version='1.0' encoding='UTF-8'?>
+<designspace format="4.1">
+  <axes>
+    <axis tag="wght" name="Weight" minimum="{weight}" maximum="{weight}" default="{weight}"/>
+  </axes>
+  <sources>
+    <source filename="{ufo}" familyname="{family}" stylename="{style}">
+      <location>
+        <dimension name="Weight" xvalue="{weight}"/>
+      </location>
+    </source>
+  </sources>
+  <instances>
+    <instance filename="instance.ufo" familyname="{family}" stylename="{style}">
+      <location>
+        <dimension name="Weight" xvalue="{weight}"/>
+      </location>
+    </instance>
+  </instances>
+</designspace>"#,
+        ufo = ufo_basename,
+        family = xml_escape(family),
+        style = xml_escape(style),
+        weight = weight,
+    );
+    std::fs::write(ds_path.as_std_path(), ds_xml)?;
+    Ok(ds_path)
+}
+
+fn xml_escape(s: &str) -> String {
+    s.replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
+        .replace('"', "&quot;")
+        .replace('\'', "&apos;")
 }
