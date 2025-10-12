@@ -40,11 +40,12 @@ pub struct Manifest {
     pub foundry: super::info::Foundry,
 
     /// Contributors.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub contributors: Vec<super::info::Person>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub contributors: Option<Vec<super::info::Person>>,
 
     /// Designers.
-    pub designers: Vec<super::info::Person>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub designers: Option<Vec<super::info::Person>>,
 
     /// Family members.
     pub family_members: Vec<FamilyMember>,
@@ -151,8 +152,8 @@ impl Manifest {
                 website: None,
                 email: None,
             },
-            contributors: Vec::new(),
-            designers: Vec::new(),
+            contributors: None,
+            designers: None,
             family_members: Vec::new(),
         }
     }

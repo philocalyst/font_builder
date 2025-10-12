@@ -4,6 +4,7 @@ use chrono::NaiveDate;
 use jiff::civil::Date;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use url::Url;
 
 /// Global font family information from info.toml.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -21,6 +22,9 @@ pub struct FontInfo {
     /// General classification (serif, sans-serif, script, display, monospace).
     pub font_form: String,
 
+    /// Website of the font
+    pub website: Url,
+
     /// Full copyright notice.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub copyright: Option<String>,
@@ -36,12 +40,15 @@ pub struct FontInfo {
     /// Foundry information.
     pub foundry: Foundry,
 
-    /// Contributors (optional).
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub contributors: Vec<Person>,
+    /// Name of the family it belongs to
+    pub family: Option<String>,
 
-    /// Designers (required, at least one).
-    pub designers: Vec<Person>,
+    /// Contributors (optional).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub contributors: Option<Vec<Person>>,
+
+    /// Designers (This or a contributor is required, at least one).
+    pub designers: Option<Vec<Person>>,
 }
 
 /// Foundry/studio information.
