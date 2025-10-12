@@ -2,6 +2,7 @@
 
 use camino::{Utf8Path, Utf8PathBuf};
 use fontc::{generate_font, Flags, Input};
+use napi_rs_woff_build::{convert_ttf_to_woff2, Woff2Params};
 use std::{collections::HashMap, fs, path::PathBuf};
 use write_fonts::{tables as write_tables, types::NameId, FontBuilder};
 
@@ -59,6 +60,7 @@ impl FontCompiler {
     }
 
     /// Compiles a UFO to a specific format.
+    /// Compiles a UFO to a specific format.
     fn compile_to_format(
         &self,
         member: &FamilyMemberSource,
@@ -67,22 +69,35 @@ impl FontCompiler {
     ) -> Result<()> {
         // Ensure output directory exists
         if let Some(parent) = output_path.parent() {
-            fs::create_dir_all(parent).map_err(|e| Error::Io(e))?;
+            fs::create_dir_all(parent).map_err(Error::Io)?;
         }
 
-        match format {
-            OutputFormat::Ttf => self.compile_to_ttf(&member, output_path),
-            OutputFormat::Woff => self.compile_to_woff(member, output_path),
-            OutputFormat::Woff2 => self.compile_to_woff2(member, output_path),
-            OutputFormat::Ttc => Err(Error::Compilation {
-                style: member.style_name.clone(),
-                reason: "TTC format requires multiple fonts (not yet implemented)".to_string(),
-            }),
-        }
+        let bytes = self.compile_to_ttf(member, output_path)?;
+
+        let out = match format {
+            OutputFormat::Ttf => bytes,
+            OutputFormat::Woff => {
+                return Err(Error::Compilation {
+                    style: member.style_name.clone(),
+                    reason: "WOFF compilation not yet implemented".to_string(),
+                })
+            }
+            OutputFormat::Woff2 => self.compile_to_woff(&bytes, output_path)?,
+            OutputFormat::Ttc => {
+                return Err(Error::Compilation {
+                    style: member.style_name.clone(),
+                    reason: "TTC compilation not yet implemented".to_string(),
+                })
+            }
+        };
+
+        fs::write(output_path, out).map_err(Error::Io)?;
+
+        Ok(())
     }
 
     /// Compiles a UFO to TTF format using write-fonts.
-    fn compile_to_ttf(&self, family: &FamilyMemberSource, out_path: &Utf8Path) -> Result<()> {
+    fn compile_to_ttf(&self, family: &FamilyMemberSource, out_path: &Utf8Path) -> Result<Vec<u8>> {
         // 1) Make a temp build dir
         let build_dir = out_path
             .parent()
@@ -115,23 +130,20 @@ impl FontCompiler {
             reason: format!("fontc generate_font error: {e}"),
         })?;
 
-        // 4) If generate_font didn’t write file, write the returned bytes ourselves
-        if !out_path.exists() {
-            std::fs::write(out_path, &bytes).map_err(crate::error::Error::Io)?;
-        }
-        Ok(())
+        Ok(bytes)
     }
 
     /// Compiles a UFO to WOFF format.
-    fn compile_to_woff(&self, member: &FamilyMemberSource, output_path: &Utf8Path) -> Result<()> {
-        // WOFF is a compressed TTF, so we would:
-        // 1. Generate TTF
-        // 2. Convert to WOFF format
+    fn compile_to_woff(&self, ttf_bytes: &Vec<u8>, output_path: &Utf8Path) -> Result<Vec<u8>> {
+        let params = Woff2Params {
+            extended_metadata: None,
+            brotli_quality: Some(255),
+            allow_transforms: None,
+        };
 
-        Err(Error::Compilation {
-            style: member.style_name.clone(),
-            reason: "WOFF compilation not yet implemented".to_string(),
-        })
+        Ok(convert_ttf_to_woff2(&ttf_bytes, Some(params))
+            .unwrap()
+            .into())
     }
 
     /// Compiles a UFO to WOFF2 format.
