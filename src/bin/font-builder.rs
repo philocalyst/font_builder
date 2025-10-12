@@ -178,18 +178,20 @@ fn info_command(args: InfoArgs) -> Result<()> {
                 println!("  Website: {}", website);
             }
 
-            println!("\nDesigners:");
-            for designer in &family.info.designers {
-                print!("  - {}", designer.name);
-                if let Some(role) = &designer.role {
-                    print!(" ({})", role);
+            if let Some(designers) = family.info.designers {
+                println!("\nDesigners:");
+                for designer in designers {
+                    print!("  - {}", designer.name);
+                    if let Some(role) = &designer.role {
+                        print!(" ({})", role);
+                    }
+                    println!();
                 }
-                println!();
             }
 
-            if !family.info.contributors.is_empty() {
+            if let Some(contributors) = family.info.contributors {
                 println!("\nContributors:");
-                for contributor in &family.info.contributors {
+                for contributor in contributors {
                     print!("  - {}", contributor.name);
                     if let Some(role) = &contributor.role {
                         print!(" ({})", role);
