@@ -37,6 +37,7 @@ once_cell = "1.19"
 regex = "1.10"
 jiff = { version = "0.2.15", features = ["serde"] }
 url = { version = "2.5.7", features = ["serde"] }
+fontc = "0.3.2"
 
 [target.'cfg(not(target_env = "msvc"))'.dependencies]
 tikv-jemallocator = "0.5"
