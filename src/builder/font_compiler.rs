@@ -99,7 +99,6 @@ impl FontCompiler {
 
     /// Compiles a UFO to TTF format using write-fonts.
     fn compile_to_ttf(&self, family: &FamilyMemberSource, out_path: &Utf8Path) -> Result<Vec<u8>> {
-        // 1) Make a temp build dir
         let build_dir = out_path
             .parent()
             .map(|p| p.join("fontc-build"))
@@ -109,6 +108,10 @@ impl FontCompiler {
         let family_name = "ok";
         let style_name = &family.style_name;
         let ufo_basename = family.ufo_path.file_name().unwrap();
+
+        let ufo_src = &family.ufo_path; // this should be a .ufo dir
+        let ufo_dst = build_dir.join(ufo_basename);
+        copy_dir_recursively(ufo_src, &ufo_dst)?; // you already have this helper
 
         // Then write the designspace...
         let ds_path =

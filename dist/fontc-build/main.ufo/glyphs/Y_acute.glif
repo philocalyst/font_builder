@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="Yacute" format="2">
+  <advance width="1331"/>
+  <unicode hex="00DD"/>
+  <outline>
+    <contour>
+      <point x="998" y="2018" type="line"/>
+      <point x="1009" y="1982" type="line"/>
+      <point x="371" y="1780" type="line"/>
+      <point x="360" y="1817" type="line"/>
+    </contour>
+    <contour>
+      <point x="34" y="1614" type="line"/>
+      <point x="304" y="1614" type="line"/>
+      <point x="304" y="1576" type="line"/>
+      <point x="221" y="1576" type="line"/>
+      <point x="661" y="946" type="line"/>
+      <point x="1102" y="1576" type="line"/>
+      <point x="1026" y="1576" type="line"/>
+      <point x="1026" y="1614" type="line"/>
+      <point x="1296" y="1614" type="line"/>
+      <point x="1296" y="1576" type="line"/>
+      <point x="1148" y="1576" type="line"/>
+      <point x="680" y="908" type="line"/>
+      <point x="680" y="38" type="line"/>
+      <point x="796" y="38" type="line"/>
+      <point x="796" y="0" type="line"/>
+      <point x="526" y="0" type="line"/>
+      <point x="526" y="38" type="line"/>
+      <point x="642" y="38" type="line"/>
+      <point x="642" y="907" type="line"/>
+      <point x="174" y="1576" type="line"/>
+      <point x="34" y="1576" type="line"/>
+    </contour>
+  </outline>
+</glyph>

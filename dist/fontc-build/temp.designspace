@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<designspace format="4.1">
+  <axes>
+    <axis tag="wght" name="Weight" minimum="0" maximum="0" default="0"/>
+  </axes>
+  <sources>
+    <source filename="main.ufo" familyname="ok" stylename="main">
+      <location>
+        <dimension name="Weight" xvalue="0"/>
+      </location>
+    </source>
+  </sources>
+  <instances>
+    <instance filename="instance.ufo" familyname="ok" stylename="main">
+      <location>
+        <dimension name="Weight" xvalue="0"/>
+      </location>
+    </instance>
+  </instances>
+</designspace>
