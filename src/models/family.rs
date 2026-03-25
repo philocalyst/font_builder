@@ -99,8 +99,6 @@ pub enum OutputFormat {
     Ttf,
     /// TrueType Collection (.ttc)
     Ttc,
-    /// Web Open Font Format (.woff)
-    Woff,
     /// Web Open Font Format 2 (.woff2)
     Woff2,
 }
@@ -111,7 +109,6 @@ impl OutputFormat {
         match self {
             OutputFormat::Ttf => "ttf",
             OutputFormat::Ttc => "ttc",
-            OutputFormat::Woff => "woff",
             OutputFormat::Woff2 => "woff2",
         }
     }
@@ -121,7 +118,6 @@ impl OutputFormat {
         match s.to_lowercase().as_str() {
             "ttf" => Some(OutputFormat::Ttf),
             "ttc" => Some(OutputFormat::Ttc),
-            "woff" => Some(OutputFormat::Woff),
             "woff2" => Some(OutputFormat::Woff2),
             _ => None,
         }
@@ -129,12 +125,7 @@ impl OutputFormat {
 
     /// Returns all available formats.
     pub fn all() -> &'static [OutputFormat] {
-        &[
-            OutputFormat::Ttf,
-            OutputFormat::Ttc,
-            OutputFormat::Woff,
-            OutputFormat::Woff2,
-        ]
+        &[OutputFormat::Ttf, OutputFormat::Ttc, OutputFormat::Woff2]
     }
 }
 

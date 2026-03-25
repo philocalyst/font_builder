@@ -16,7 +16,7 @@ path = "src/bin/font-builder.rs"
 # Core
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-ttf2woff2 = {path = "./ttf2woff2"}
+ttf2woff2 = "0.11.0"
 toml = "0.8"
 
 # Font handling
