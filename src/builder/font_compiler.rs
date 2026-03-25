@@ -2,7 +2,6 @@
 
 use camino::{Utf8Path, Utf8PathBuf};
 use fontc::{generate_font, Flags, Input};
-use pollster::FutureExt as _;
 use std::{collections::HashMap, fs, path::PathBuf};
 use ttf2woff2::{encode, BrotliQuality};
 use write_fonts::{tables as write_tables, types::NameId, FontBuilder};
