@@ -571,7 +571,6 @@ dependencies = [
  "fontc",
  "jiff",
  "norad 0.12.1",
- "once_cell",
  "pollster",
  "regex",
  "serde",
