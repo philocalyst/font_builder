@@ -1,6 +1,5 @@
 //! Models for info.toml configuration.
 
-use chrono::NaiveDate;
 use jiff::civil::Date;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

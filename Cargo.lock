@@ -566,7 +566,6 @@ name = "font-builder"
 version = "0.1.0"
 dependencies = [
  "camino",
- "chrono",
  "clap",
  "eyre",
  "fontc",

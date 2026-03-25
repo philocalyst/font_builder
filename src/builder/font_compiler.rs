@@ -73,6 +73,7 @@ impl FontCompiler {
             fs::create_dir_all(parent).map_err(Error::Io)?;
         }
 
+        // First get into TTF
         let bytes = self.compile_to_ttf(member, output_path)?;
 
         let out = match format {
