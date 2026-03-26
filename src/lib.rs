@@ -43,10 +43,8 @@ impl Default for BuildConfig {
 
 /// Main entry point for building a font family.
 pub fn build_font_family(family_dir: &Utf8Path, config: BuildConfig) -> Result<Utf8PathBuf> {
-    // Parse the font family
     let family = parse_font_family(family_dir)?;
 
-    // Create output directory
     fs::create_dir_all(&config.output_dir).map_err(Error::Io)?;
 
     // Compile fonts
@@ -59,10 +57,8 @@ pub fn build_font_family(family_dir: &Utf8Path, config: BuildConfig) -> Result<U
         compiled_files.insert(member.style_name.clone(), files);
     }
 
-    // Generate manifest
     let manifest = ManifestGenerator::generate(&family, &compiled_files)?;
 
-    // Write manifest to JSON
     let manifest_path = config.output_dir.join("manifest.json");
     let manifest_json = serde_json::to_string_pretty(&manifest)?;
     fs::write(&manifest_path, manifest_json).map_err(Error::Io)?;
