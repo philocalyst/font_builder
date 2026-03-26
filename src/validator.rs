@@ -1,9 +1,7 @@
 //! Validation logic for font families.
 
-use regex::Regex;
-
 use crate::{
-    error::{Error, Result, UfoVersion},
+    error::{Error, Result},
     models::{FamilyMemberSource, FontInfo},
 };
 

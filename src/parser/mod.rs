@@ -2,15 +2,13 @@
 
 pub mod info_parser;
 
-use camino::{Utf8Path, Utf8PathBuf};
-use std::fs;
-use walkdir::WalkDir;
-
 use crate::{
     error::{Error, Result},
-    models::{FamilyMemberSource, FontFamily, FontInfo, InfoOverride},
+    models::{FamilyMemberSource, FontFamily},
     validator,
 };
+use camino::{Utf8Path, Utf8PathBuf};
+use std::fs;
 
 /// Parses a complete font family from a directory.
 pub fn parse_font_family(root: &Utf8Path) -> Result<FontFamily> {
