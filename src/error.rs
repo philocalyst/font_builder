@@ -120,21 +120,3 @@ fn format_errors(errors: &[Error]) -> String {
         .collect::<Vec<_>>()
         .join("\n")
 }
-
-impl Error {
-    /// Creates a validation error.
-    pub fn validation(context: impl Into<String>, reason: impl Into<String>) -> Self {
-        Error::Validation {
-            context: context.into(),
-            reason: reason.into(),
-        }
-    }
-
-    /// Creates a missing field error.
-    pub fn missing_field(field: impl Into<String>, context: impl Into<String>) -> Self {
-        Error::MissingField {
-            field: field.into(),
-            context: context.into(),
-        }
-    }
-}

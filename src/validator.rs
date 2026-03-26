@@ -37,7 +37,10 @@ pub fn validate_font_info(info: &FontInfo, context: &str) -> Result<()> {
 
     // Validate summary is not empty
     if info.summary.trim().is_empty() {
-        errors.push(Error::missing_field("summary", context));
+        errors.push(Error::MissingField {
+            field: "summary".to_string(),
+            context: context.to_string(),
+        });
     }
 
     // Validate fontform
@@ -47,12 +50,18 @@ pub fn validate_font_info(info: &FontInfo, context: &str) -> Result<()> {
 
     // Validate foundry
     if info.foundry.name.trim().is_empty() {
-        errors.push(Error::missing_field("foundry.name", context));
+        errors.push(Error::MissingField {
+            field: "foundry.name".to_string(),
+            context: context.to_string(),
+        });
     }
 
     // Validate designers (at least one required)
     if info.designers.is_none() && info.contributors.is_none() {
-        errors.push(Error::missing_field("designers or contribitors", context));
+        errors.push(Error::MissingField {
+            field: "designers or contribitors".to_string(),
+            context: context.to_string(),
+        });
     }
 
     if errors.is_empty() {
