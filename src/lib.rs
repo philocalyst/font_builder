@@ -53,6 +53,7 @@ pub fn build_font_family(family_dir: &Utf8Path, config: BuildConfig) -> Result<U
     let compiler = FontCompiler::new(config.output_dir.clone(), config.formats);
     let mut compiled_files = HashMap::new();
 
+    // Handle for each family
     for member in &family.members {
         let files = compiler.compile_member(member, family.family_name())?;
         compiled_files.insert(member.style_name.clone(), files);
